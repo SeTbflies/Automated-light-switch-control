@@ -1,0 +1,89 @@
+#include <IRremote.h>
+#include <Servo.h>
+#include <Stepper.h>
+
+#define STEPS  32
+
+int irpin = 2;
+Servo theservo;
+int steps2take;
+Stepper small_stepper(STEPS, 3,5,4,6);
+
+
+void SinkButton(){
+int pos;
+ Serial.println("on");
+for (pos = 0; pos <= 180; pos += 1){ //140 to 180
+  theservo.write(pos);
+}
+}
+void MainButton(){
+int pos;
+ Serial.println("on");
+for (pos = 180; pos >= 0; pos -= 1){ //140 to 90
+  theservo.write(pos);
+}
+}
+void up(){
+  Serial.println("up");
+ small_stepper.setSpeed(500);
+        steps2take  =  2048;  // Rotate CCW
+        small_stepper.step(steps2take);
+        delay(2000);
+        
+}
+void down(){
+  Serial.println("down");
+  small_stepper.setSpeed(500); //Max seems to be 500
+        steps2take  =  -2048;  // Rotate CW
+        small_stepper.step(steps2take);
+        delay(2000);
+        
+}
+void setup() {
+  // put your setup code here, to run once:
+  theservo.attach(8);
+  IrReceiver.begin(irpin, ENABLE_LED_FEEDBACK);
+  Serial.begin(9600);
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  /*int val;
+  while (Serial.available() > 0) {
+    val = Serial.parseInt();
+    if (val != 0) {
+      Serial.println(val);
+      theservo.write(val);
+    }
+  }
+  delay(5);*/
+  if (IrReceiver.decode()){
+    switch(IrReceiver.decodedIRData.decodedRawData){
+      case 0xBA45FF00: //Button 1 new remote, main switch
+      Serial.println("Button 1");
+      down();
+      delay(1000);
+      MainButton();
+      delay(1000);
+      up();
+      break;
+      case 0xB946FF00: //Button 2 new remote, main switch
+      up();
+      MainButton();
+      down();
+      break;
+      case 0xB847FF00: //Button 3 new remote, sink switch
+      down();
+      SinkButton();
+      up();
+      break;
+      case 0xBB44FF00: //Button 4 new remote, sink switch
+      up();
+      SinkButton();
+      down();
+      break;
+    }
+  }
+}
