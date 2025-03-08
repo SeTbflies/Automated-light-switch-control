@@ -10,39 +10,64 @@ int steps2take;
 Stepper small_stepper(STEPS, 3,5,4,6);
 
 
-void SinkButton(){
-int pos;
- Serial.println("on");
-for (pos = 0; pos <= 180; pos += 1){ //140 to 180
-  theservo.write(pos);
+oid SinkButton(){
+ Serial.println("Sinkon");
+ theservo.write(70);
+ delay(5);
+for (int pos = 70; pos <= 150; pos += 1) { //70 to 150
+    theservo.write(pos);              
+    delay(3);                      
+  }
+  
+  for (int pos = 150; pos >= 70; pos -= 1) { //150to 70
+    theservo.write(pos);              
+    delay(10);
 }
 }
 void MainButton(){
-int pos;
- Serial.println("on");
-for (pos = 180; pos >= 0; pos -= 1){ //140 to 90
+ Serial.println("Mainon");
+ theservo.write(90);
+ delay(5);
+for (int pos = 90; pos >= 20; pos -= 1){ //90 to 20
   theservo.write(pos);
+  delay(3);
+}
+for (int pos = 20; pos <= 90; pos += 1){ //20 to 90
+  theservo.write(pos);
+  delay(10);
 }
 }
 void up(){
   Serial.println("up");
- small_stepper.setSpeed(500);
-        steps2take  =  2048;  // Rotate CCW
+ small_stepper.setSpeed(500); //Max speed
+        steps2take  =  750;  // Rotate CCW
         small_stepper.step(steps2take);
-        delay(2000);
+        delay(1000);
         
 }
 void down(){
   Serial.println("down");
-  small_stepper.setSpeed(500); //Max seems to be 500
-        steps2take  =  -2048;  // Rotate CW
+  small_stepper.setSpeed(500); //Max speed
+        steps2take  =  -750;  // Rotate CW
         small_stepper.step(steps2take);
-        delay(2000);
+        delay(1000);
         
+}
+void Calibrateup(){
+  small_stepper.setSpeed(500);
+        steps2take  =  100;  // Rotate CCW
+        small_stepper.step(steps2take);
+        delay(200);
+}
+void Calibratedown(){
+  small_stepper.setSpeed(500); //Max speed
+        steps2take  =  -100;  // Rotate CW
+        small_stepper.step(steps2take);
+        delay(200);
 }
 void setup() {
   // put your setup code here, to run once:
-  theservo.attach(8);
+  theservo.attach(8, 544, 2400); //port, min, max
   IrReceiver.begin(irpin, ENABLE_LED_FEEDBACK);
   Serial.begin(9600);
 
@@ -50,40 +75,42 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  /*int val;
-  while (Serial.available() > 0) {
-    val = Serial.parseInt();
-    if (val != 0) {
-      Serial.println(val);
-      theservo.write(val);
-    }
-  }
-  delay(5);*/
+  
   if (IrReceiver.decode()){
     switch(IrReceiver.decodedIRData.decodedRawData){
-      case 0xBA45FF00: //Button 1 new remote, main switch
+      case 0xBA45FF00: //Button 1 new remote, main switch, off
       Serial.println("Button 1");
       down();
-      delay(1000);
       MainButton();
-      delay(1000);
       up();
       break;
-      case 0xB946FF00: //Button 2 new remote, main switch
+      case 0xB946FF00: //Button 2 new remote, main switch, on
+      Serial.println("Button 2");
       up();
       MainButton();
       down();
       break;
-      case 0xB847FF00: //Button 3 new remote, sink switch
+      case 0xB847FF00: //Button 3 new remote, sink switch, off
+      Serial.println("Button 3");
       down();
       SinkButton();
       up();
       break;
-      case 0xBB44FF00: //Button 4 new remote, sink switch
+      case 0xBB44FF00: //Button 4 new remote, sink switch, on
+      Serial.println("Button 4");
       up();
       SinkButton();
       down();
+      break;
+      case 0xE718FF00:
+      Serial.println("Button up");
+      Calibrateup();
+      break;
+      case 0xAD52FF00:
+      Serial.println("Button down");
+      Calibratedown();
       break;
     }
+  IrReceiver.resume();
   }
 }
