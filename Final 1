@@ -5,21 +5,22 @@
 #define STEPS  32
 
 int irpin = 2;
+int pos = 0;
 Servo theservo;
 int steps2take;
 Stepper small_stepper(STEPS, 3,5,4,6);
 
 
-oid SinkButton(){
+void SinkButton(){
  Serial.println("Sinkon");
  theservo.write(70);
- delay(5);
-for (int pos = 70; pos <= 150; pos += 1) { //70 to 150
+ delay(10);
+for (int pos = 70; pos <= 170; pos += 1) { //70 to 170
     theservo.write(pos);              
     delay(3);                      
   }
   
-  for (int pos = 150; pos >= 70; pos -= 1) { //150to 70
+  for (int pos = 170; pos >= 70; pos -= 1) { 
     theservo.write(pos);              
     delay(10);
 }
@@ -28,27 +29,27 @@ void MainButton(){
  Serial.println("Mainon");
  theservo.write(90);
  delay(5);
-for (int pos = 90; pos >= 20; pos -= 1){ //90 to 20
+for (int pos = 90; pos >= 0; pos -= 1){ //90 to 20
   theservo.write(pos);
   delay(3);
 }
-for (int pos = 20; pos <= 90; pos += 1){ //20 to 90
+for (int pos = 0; pos <= 90; pos += 1){ //20 to 90
   theservo.write(pos);
   delay(10);
 }
 }
 void up(){
   Serial.println("up");
- small_stepper.setSpeed(500); //Max speed
-        steps2take  =  750;  // Rotate CCW
+ small_stepper.setSpeed(500);
+        steps2take  =  1800;  // Rotate CCW 
         small_stepper.step(steps2take);
         delay(1000);
         
 }
 void down(){
   Serial.println("down");
-  small_stepper.setSpeed(500); //Max speed
-        steps2take  =  -750;  // Rotate CW
+  small_stepper.setSpeed(500); 
+        steps2take  =  -1800;  // Rotate CW
         small_stepper.step(steps2take);
         delay(1000);
         
@@ -60,14 +61,14 @@ void Calibrateup(){
         delay(200);
 }
 void Calibratedown(){
-  small_stepper.setSpeed(500); //Max speed
+  small_stepper.setSpeed(500); 
         steps2take  =  -100;  // Rotate CW
         small_stepper.step(steps2take);
         delay(200);
 }
 void setup() {
   // put your setup code here, to run once:
-  theservo.attach(8, 544, 2400); //port, min, max
+  theservo.attach(8, 544, 2400);
   IrReceiver.begin(irpin, ENABLE_LED_FEEDBACK);
   Serial.begin(9600);
 
@@ -86,9 +87,9 @@ void loop() {
       break;
       case 0xB946FF00: //Button 2 new remote, main switch, on
       Serial.println("Button 2");
-      up();
+      
       MainButton();
-      down();
+      
       break;
       case 0xB847FF00: //Button 3 new remote, sink switch, off
       Serial.println("Button 3");
@@ -98,9 +99,9 @@ void loop() {
       break;
       case 0xBB44FF00: //Button 4 new remote, sink switch, on
       Serial.println("Button 4");
-      up();
+      
       SinkButton();
-      down();
+      
       break;
       case 0xE718FF00:
       Serial.println("Button up");
